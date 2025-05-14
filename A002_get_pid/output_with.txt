@@ -1,0 +1,2 @@
+96729 execve("./pid_getter", ["./pid_getter"], 0x7fff24eca738 /* 61 vars */) = -1 ENOEXEC (Exec format error)
+96729 +++ exited with 1 +++
