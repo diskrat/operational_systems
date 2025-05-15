@@ -19,6 +19,7 @@ void enter_region(void)
         if (v == 2 || atomic_compare_exchange_weak_explicit(&trava,&v, 2,memory_order_relaxed,memory_order_relaxed)) {
             syscall(SYS_futex, &trava, FUTEX_WAIT, 2);
         }
+        v=0;
     }while(!atomic_compare_exchange_weak_explicit(&trava, &v,2,memory_order_acquire,memory_order_relaxed));
 }
  
@@ -36,7 +37,7 @@ void leave_region(void)
 
 void *thread_something(void *arg)
 {
-    for(int i = 0; i < 1000000; i++){
+    for(int i = 0; i < 1000000000; i++){
         enter_region();
         something++;
         leave_region();

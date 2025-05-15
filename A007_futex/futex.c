@@ -20,6 +20,7 @@ void enter_region(void)
         if (v == 2 || atomic_compare_exchange_strong(&trava,&v, 2)) {
             syscall(SYS_futex, &trava, FUTEX_WAIT, 2);
         }
+        v=0;
     }while(!atomic_compare_exchange_strong(&trava, &v,2));
 }
  
@@ -33,14 +34,11 @@ void leave_region(void)
 
 }
 
-uint64_t something = 0;
-
-
 void *thread_something(void *arg)
 {
-    for(int i = 0; i < 10000; i++){
+    for(int i = 0; i < 1000000000; i++){
         enter_region();
-        something++;
+        valor++;
         leave_region();
     }
     return NULL;
@@ -54,6 +52,6 @@ int main(void)
     pthread_create(&th2, NULL,thread_something,(void*)1);
     pthread_join(th, NULL);
     pthread_join(th2, NULL);
-    printf("Final value of something: %lu\n", something);
+    printf("Final value of something: %lu\n", valor);
     return 0;
 }
