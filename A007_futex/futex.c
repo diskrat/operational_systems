@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -6,11 +7,7 @@
 #include <linux/futex.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-
-#define FALSE 0
-#define TRUE  1
-#define N     8 
-                   
+ 
 uint64_t valor = 0;
 _Atomic uint32_t trava = 0;
 void enter_region(void)       
@@ -28,16 +25,20 @@ void enter_region(void)
  
 void leave_region(void)       
 {
-    
+    uint32_t v = atomic_fetch_sub(&trava,1);
+    if (v != 1) {
+        atomic_store(&trava, 0);
+        syscall(SYS_futex, &trava, FUTEX_WAKE, 1);
+    }
+
 }
 
 uint64_t something = 0;
 
 
-void *thread(void *arg)
+void *thread_something(void *arg)
 {
-    int proc = (size_t)arg;
-    for(int i = 0; i < 100000000; i++){
+    for(int i = 0; i < 10000; i++){
         enter_region();
         something++;
         leave_region();
@@ -49,12 +50,8 @@ void *thread(void *arg)
 int main(void)
 {
     pthread_t th, th2;
-    int rc = pthread_create(&th, NULL,thread,NULL);
-    int rc2 = pthread_create(&th2, NULL,thread,NULL);
-    if(rc !=0 || rc2 !=0) {
-        fprintf(stderr," Erro ao criar thread:  %d\n",rc);
-        exit(1);
-    }
+    pthread_create(&th, NULL,thread_something,0);
+    pthread_create(&th2, NULL,thread_something,(void*)1);
     pthread_join(th, NULL);
     pthread_join(th2, NULL);
     printf("Final value of something: %lu\n", something);
