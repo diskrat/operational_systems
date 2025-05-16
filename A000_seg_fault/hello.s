@@ -13,3 +13,4 @@ _start:
 
 .section .rodata
 msg: .asciz "Hello world\n"
+
