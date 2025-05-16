@@ -108,7 +108,8 @@ My parent's PID is: 39557
 ## 1. Qual é a diferença entre getpid() e getppid()? O que eles representam?
 
 - `getpid()` retorna o identificador do processo atual (PID).
-- `getppid()` retorna o identificador do processo pai (PPID).
+- `getppid()` retorna o identificador do processo pai (PPID). 
+
 Esses valores permitem que cada processo saiba seu próprio identificador e o identificador do processo que o criou.
 
 ## 2. O que acontece com o PID do processo filho após o fork()?
