@@ -122,7 +122,7 @@ O sistema operacional utiliza o PID para identificar cada processo de forma úni
 
 ## 4. É possível prever quantas vezes o programa imprimirá mensagens após o fork()? Justifique.
 
-Sim. Após o `fork()`, tanto o processo pai quanto o filho executam o código subsequente. No código apresentado, cada execução do programa resultará em duas sequências de mensagens: uma do pai e uma do filho, pois ambos executam os blocos de impressão correspondentes.
+Sim. Após o `fork()`, tanto o processo pai quanto o filho executam o código seguinte. Como no exemplo é checado se estamos no processo pai ou no processo filho, cada parte do código será executado em seu devido processo.
 
 ## 5. Por que o mesmo programa pode ter múltiplos processos com identidades distintas?
 
