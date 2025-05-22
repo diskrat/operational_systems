@@ -8,14 +8,70 @@
 #include <sys/syscall.h>
 
 #define TAMANHO 10
+struct esperando{
+    pthread_mutex_t m;
+    struct esperando *prox;
+};
+
+struct semaforo {
+    pthread_mutex_t trava;
+    size_t valor;
+    struct esperando *cabeca;
+    struct esperando *cauda;
+};
+void sem_inicializar(struct semaforo *s)
+{
+    pthread_mutex_init(&s->trava,NULL);
+    s->valor = 1;
+    s->cabeca = NULL;
+    s->cauda = NULL;
+};
+
+void sem_incrementar(struct semaforo *s)
+{
+    struct esperando *esp;
+    pthread_mutex_lock(&s->trava);
+    esp = s->cabeca;
+    if(esp != NULL){
+        s->cabeca = esp->prox;
+        if(s->cabeca == NULL){
+            s->cauda = NULL;
+        }
+    }
+    s->valor++;
+    pthread_mutex_unlock(&s->trava);
+    if(esp != NULL){
+        pthread_mutex_unlock(&esp->m);
+    }
+};
+void sem_decrementar(struct semaforo *s){
+    struct esperando esp;
+    for(;;){
+        pthread_mutex_lock( &s->trava);
+        if(s->valor > 0){
+            s->valor--;
+            pthread_mutex_unlock(&s->trava);
+            return;
+        }
+        pthread_mutex_init(&esp.m,NULL);
+        pthread_mutex_lock(&esp.m);
+        esp.prox = NULL;
+        if(s->cauda){
+            s->cauda->prox = &esp;
+        }else{
+            s->cabeca = &esp;
+        }
+        s->cauda = &esp;
+        pthread_mutex_unlock(&s->trava);
+        pthread_mutex_lock(&esp.m);
+    }
+};
+
+
 volatile int dados [TAMANHO];
 volatile size_t inserir = 0;
 volatile size_t remover = 0;
 // implementar semaforo
-struct semaforo;
-void sem_inicializar(struct semaforo *s);
-void sem_incrementar(struct semaforo *s);
-void sem_decrementar(struct semaforo *s);
 
                    
 uint64_t something = 0;
@@ -50,11 +106,11 @@ void *produtor (void *arg)
     int v;
     for (v= 1;;v++){
         enter_region();
-        while(((inserir + 1) % TAMANHO) == remover){leave_region();enter_region();};
         printf("Produzindo %d\n",v);
         dados[inserir] = v;
         inserir = (inserir + 1) % TAMANHO;
         leave_region();
+        // sem_incrementar(&sem_fila);
         usleep(1);
     }
     return NULL;
